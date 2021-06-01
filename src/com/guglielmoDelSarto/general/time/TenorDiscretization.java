@@ -63,6 +63,16 @@ public interface TenorDiscretization {
 	 * 
 	 * @return n the length of tenor array
 	 */
+	public double getLastTime();
+	
+	/**
+	 * Return the length of the tenor discretization, which is n
+	 * for the structure of the kind
+	 * <br>
+	 * [t = t<sub>0</sub>, t<sub>1</sub>, ..., t<sub>n-1</sub> = T]
+	 * 
+	 * @return n the length of tenor array
+	 */
 	public int getLength();
 
 }

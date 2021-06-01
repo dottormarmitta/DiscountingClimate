@@ -17,6 +17,13 @@ import com.guglielmoDelSarto.general.discounting.ExponentialDiscounting;
 import com.guglielmoDelSarto.general.time.TenorDiscretization;
 import com.guglielmoDelSarto.general.time.TenorFromTimes;
 
+/**
+ * Experiment-Class. It is used to look at the sensitivity of
+ * agents' investment to discount rate at different maturities
+ * 
+ * @since Version 1.0
+ * @author Guglielmo Del Sarto
+ */
 public class OptimalPoint {
 
 	public static void main(String[] args) {
@@ -24,8 +31,8 @@ public class OptimalPoint {
 		System.out.println("-".repeat(80));
 		System.out.println("");
 
-		double future = 1.0;
-		for(int t = 0; t < 4; t++) {
+		double future = 10;
+		for(int t = 0; t < 3; t++) {
 			/*
 			 * Time structure
 			 */
@@ -37,30 +44,30 @@ public class OptimalPoint {
 			 * Wealth and production
 			 */
 			double wealth = 100.00;
-			ProductionFunction p = new CobbDouglas1D(0.7, 2.0);
+			ProductionFunction p = new CobbDouglas1D(0.7, 3.5);
 			InvestmentFunction f = new LinearInvestment();
 			f.setTotalWealth(wealth);
 
 			/*
 			 * See the impact of discount rate on today's allocation
 			 */
-			double rfr = 0.000;
+			double rate = 0.000;
 			System.out.println("This experiment is intended to show how discount rate affect"
 					+ " investment allocation.");
 			System.out.println("Maturity is now at...: " + future + " years");
 			System.out.println();
-			for(int i = 0; i < 4; i++) {
+			for(int i = 0; i < 3; i++) {
 
 				/*
 				 * Discount
 				 */
-				DiscountFunction df = new ExponentialDiscounting(rfr);
+				DiscountFunction df = new ExponentialDiscounting(rate);
 				df.setTenor(tenor);
 
 				/*
 				 * Utility functions
 				 */
-				UtilityFunction u = new PowerUtilityFunction(0.7);
+				UtilityFunction u = new PowerUtilityFunction(2.0);
 				MultidimensionalUtilityFunction U = new AdditiveUtility2D(u, df);
 
 				/*
@@ -75,16 +82,24 @@ public class OptimalPoint {
 				/*
 				 * Results
 				 */
-				System.out.println("Discount rate is.....: " + rfr);
+				double[] C = optimizer.getOptimalConsumption();
+				System.out.println("Discount rate is.....: " + rate);
 				System.out.println("Optimal allocation is: " + 
-						Arrays.toString(optimizer.getOptimalConsumption()));
-				System.out.println("Investment equals....: " + 
-						(wealth - optimizer.getOptimalConsumption()[0]));
+						Arrays.toString(C));
+				System.out.println("Investment equals....: " + (wealth - C[0]));
+				System.out.println("On optimal point we must have the equality: ");
+				System.out.println("      p'(k) = - Uc_t / Uc_T       ");
+				System.out.println("Is this the case?");
+				System.out.println("p'(k) ..............: " + p.getFirstDerivative(
+						f.getInvestment(C[0])
+						)*f.getDerivative(C[0]));
+				double[] partials = U.getPartialDerviatives(C);
+				System.out.println("U'(c_t)/U'(c_T) ....: " + (-partials[0]/partials[1]));
 				System.out.println();
 
 
 
-				rfr += 0.0005;
+				rate += 0.005;
 			}
 			System.out.println("-".repeat(80));
 			System.out.println("");

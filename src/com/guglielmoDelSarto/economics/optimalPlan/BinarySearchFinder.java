@@ -4,15 +4,28 @@ import com.guglielmoDelSarto.economics.production.InvestmentFunction;
 import com.guglielmoDelSarto.economics.production.ProductionFunction;
 import com.guglielmoDelSarto.economics.utilityFunctions.MultidimensionalUtilityFunction;
 
+/**
+ * Root finder for utility function. Uses Binary Search algorithm.
+ * Maximum number of iterations is capped at 50Mln
+ * 
+ * @since Version 1.0
+ * @author Guglielmo Del Sarto
+ */
 public class BinarySearchFinder implements OptimalFinder {
 	
 	private double todayConsumptionMin = 0.0;
 	private double todayConsumptionMax = 0.0;
 	private MultidimensionalUtilityFunction utility;
-	private ProductionFunction production;
-	private InvestmentFunction investment;
+	private ProductionFunction p;
+	private InvestmentFunction f;
 	private final double tolerance;
 	
+	/**
+	 * Build the root finder using two parameters.
+	 * 
+	 * @param tolerance the tolerance needed
+	 * @param wealth the initial endowment of agents
+	 */
 	public BinarySearchFinder(double tolerance, double wealth) {
 		this.tolerance = tolerance;
 		this.todayConsumptionMax = wealth;
@@ -25,36 +38,34 @@ public class BinarySearchFinder implements OptimalFinder {
 
 	@Override
 	public void setProductionFunction(ProductionFunction production) {
-		this.production = production;
+		this.p = production;
 	}
 
 	@Override
 	public void setInvestmentFunction(InvestmentFunction investment) {
-		this.investment = investment;
+		this.f = investment;
 	}
 
 	@Override
 	public double[] getOptimalConsumption() {
 		int iterations = 0;
 		double median = (todayConsumptionMin + todayConsumptionMax)/2.0;
-		double[] allocationMedian = {median, production.getProduction(
-				investment.getInvestment(median))};
+		double[] allocationMedian = {median, p.getProduction(
+				f.getInvestment(median))};
 		while(Math.abs(measureUtility(allocationMedian, median)) > tolerance &&
-				iterations < 50000000) {
+				iterations < 5000000) {
 			if (measureUtility(allocationMedian, median) > 0) {
 				todayConsumptionMin = median;
 			} else {
 				todayConsumptionMax = median;
 			}
 			median = (todayConsumptionMin + todayConsumptionMax)/2.0;
-			double[] newAllocation = {median, production.getProduction(
-					investment.getInvestment(median))};
+			double[] newAllocation = {median, p.getProduction(
+					f.getInvestment(median))};
 			allocationMedian = newAllocation;
 			iterations++;
 		}
-		return new double[] {median, 
-				production.getProduction(
-						investment.getInvestment(median))};
+		return allocationMedian;
 	}
 	
 	/*
@@ -63,8 +74,8 @@ public class BinarySearchFinder implements OptimalFinder {
 	private double measureUtility(double[] allocation, double ct) {
 		return utility.getPartialDerviatives(allocation)[0] + 
 		utility.getPartialDerviatives(allocation)[1]*
-		production.getFirstDerivative(investment.getInvestment(ct))*
-		investment.getDerivative(ct);
+		p.getFirstDerivative(f.getInvestment(ct))*
+		f.getDerivative(ct);
 	}
 
 }

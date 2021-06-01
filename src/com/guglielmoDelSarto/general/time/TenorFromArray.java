@@ -37,6 +37,11 @@ public class TenorFromArray implements TenorDiscretization {
 	public double getTimeStep(int initialIndex, int finalIndex) {
 		return tenor[finalIndex] - tenor[initialIndex];
 	}
+	
+	@Override
+	public double getLastTime() {
+		return tenor[tenor.length - 1];
+	}
 
 	@Override
 	public int getLength() {
